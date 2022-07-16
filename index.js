@@ -1,11 +1,11 @@
 const express = require("express");
 const { MongoClient } = require("mongodb");
+const dotenv = require("dotenv").config();
 const app = express();
 let PORT = process.env.PORT || 3000;
 
 async function main() {
-  const uri =
-    "mongodb+srv://vladutvoicu:vladutvoicu@cluster0.2n7fpyr.mongodb.net/currencyexchangerates?retryWrites=true&w=majority";
+  const uri = dotenv.parsed["MONGODB_URI"];
 
   const client = new MongoClient(uri);
 
