@@ -1,4 +1,6 @@
 import pymongo
+import os
+from dotenv import load_dotenv
 from pymongo import MongoClient
 from bs4 import BeautifulSoup
 import requests
@@ -6,9 +8,12 @@ import time
 import json
 from apscheduler.schedulers.blocking import BlockingScheduler
 
+load_dotenv(".env")
+uri = os.getenv("MONGODB_URI")
+
 sched = BlockingScheduler()
 
-client = MongoClient("mongodb+srv://vladutvoicu:vladutvoicu@cluster0.2n7fpyr.mongodb.net/currencyexchangerates?retryWrites=true&w=majority")
+client = MongoClient(uri)
 db = client["currencyexchangerates"]
 collection = db["rates"]
 
