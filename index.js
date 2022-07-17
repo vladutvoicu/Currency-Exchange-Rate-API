@@ -1,6 +1,7 @@
 const express = require("express");
 const { MongoClient } = require("mongodb");
 const dotenv = require("dotenv").config();
+const fs = require("fs");
 const app = express();
 let PORT = process.env.PORT || 3000;
 
@@ -33,19 +34,23 @@ app.listen(PORT, () => console.log(`live on http://localhost:${PORT}`));
 
 app.use(express.json());
 
-app.get("/:baseCurrency/:targetCurrency", (req, res) => {
+app.set("json spaces", 4);
+
+app.get("/:baseCurrency?/:targetCurrency?", (req, res) => {
   const { baseCurrency } = req.params;
   const { targetCurrency } = req.params;
 
+  const currencies = JSON.parse(fs.readFileSync("currencies.json", "utf8"));
+
   if (!baseCurrency) {
-    res.status(418).send({ message: "Base currency is required!" });
+    res.send({ error: "Base currency is required!" });
   }
 
-  if (!targetCurrency) {
-    res.status(418).send({ message: "Target currency is required!" });
-  }
-
-  if (baseCurrency != "" && targetCurrency != "") {
+  if (
+    currencies.includes(baseCurrency) &&
+    currencies.includes(targetCurrency)
+  ) {
+    var exchangeRates;
     var exchangeRate;
     var date;
 
@@ -63,5 +68,27 @@ app.get("/:baseCurrency/:targetCurrency", (req, res) => {
           date: date,
         })
       );
+  } else if (
+    currencies.includes(baseCurrency) &&
+    !currencies.includes(targetCurrency) &&
+    targetCurrency == undefined
+  ) {
+    main()
+      .then((rates) => {
+        exchangeRates = rates[baseCurrency];
+        date = rates["DATE"];
+      })
+      .catch(console.error)
+      .then(() =>
+        res.send({
+          baseCurrency: baseCurrency,
+          rates: exchangeRates,
+          date: date,
+        })
+      );
+  } else if (!currencies.includes(baseCurrency)) {
+    res.send({ error: `${baseCurrency} is not an available currency!` });
+  } else if (!currencies.includes(targetCurrency)) {
+    res.send({ error: `${targetCurrency} is not an available currency!` });
   }
 });
