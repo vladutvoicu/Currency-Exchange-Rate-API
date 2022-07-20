@@ -43,10 +43,21 @@ app.get("/:baseCurrency?/:targetCurrency?", (req, res) => {
   const currencies = JSON.parse(fs.readFileSync("currencies.json", "utf8"));
 
   if (!baseCurrency) {
-    res.send({ error: "Base currency is required!" });
+    res.send({ error: "Base parameter missing!" });
   }
 
-  if (
+  if (baseCurrency == "currencies") {
+    main()
+      .then((rates) => {
+        var currencies = Object.keys(rates).filter(
+          (item) => item !== "_id" && item !== "DATE"
+        );
+        res.send({
+          currencies: currencies,
+        });
+      })
+      .catch(console.error);
+  } else if (
     currencies.includes(baseCurrency) &&
     currencies.includes(targetCurrency)
   ) {
